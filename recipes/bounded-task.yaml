@@ -1,0 +1,100 @@
+name: bounded-task
+description: Execute a multi-step desktop task with action budgets, approval gates, and bounded loops
+version: 1.0.0
+author: cua
+tags:
+  - cua
+  - task
+  - bounded
+  - approval
+
+# Usage:
+#   recipes execute cua:recipes/bounded-task.yaml --context '{
+#     "task_description": "Open Safari and navigate to example.com",
+#     "max_actions": "10"
+#   }'
+
+context:
+  task_description: ""
+  max_actions: "10"
+
+stages:
+  - name: planning
+    description: Decompose the task into bounded steps
+    steps:
+      - id: observe-initial
+        agent: cua:cua-operator
+        prompt: |
+          Observe the current desktop state using the `cua` tool with action `observe`.
+          Report the full state: focused app, windows, cursor, key semantic elements.
+        output: initial_state
+        timeout: 120
+
+      - id: create-plan
+        agent: cua:cua-planner
+        prompt: |
+          Current desktop state:
+          {{initial_state}}
+
+          Task: {{task_description}}
+          Action budget: {{max_actions}} actions maximum.
+
+          Create a step-by-step plan:
+          1. List each atomic action needed
+          2. Define success criteria for each step
+          3. Identify potential failure points
+          4. Total actions must not exceed {{max_actions}}
+
+          Format as a numbered list with clear action descriptions.
+        output: task_plan
+        timeout: 180
+
+    approval:
+      required: true
+      prompt: |
+        ## Proposed Action Plan
+
+        **Task:** {{task_description}}
+        **Budget:** {{max_actions}} actions
+
+        ### Plan
+        {{task_plan}}
+
+        **Approve** to begin execution, or **reject** to revise the plan.
+
+  - name: execution
+    description: Execute the approved plan step by step
+    steps:
+      - id: execute-plan
+        agent: cua:cua-operator
+        prompt: |
+          Execute the following plan step by step:
+
+          {{task_plan}}
+
+          Rules:
+          - Execute ONE action at a time
+          - Observe after EVERY action to verify the result
+          - If an action fails, re-observe and try a different approach (max 2 retries per step)
+          - If a step cannot be completed after retries, stop and report
+          - Track your action count — do not exceed {{max_actions}} total actions
+
+          Report after completing or stopping:
+          1. Steps completed successfully
+          2. Steps that failed and why
+          3. Total actions used
+          4. Final screen state
+        output: execution_result
+        timeout: 600
+
+    approval:
+      required: true
+      prompt: |
+        ## Execution Complete
+
+        **Task:** {{task_description}}
+
+        ### Result
+        {{execution_result}}
+
+        **Approve** to confirm the task is complete, or **reject** if further action is needed.
