@@ -1,0 +1,79 @@
+name: recovery-workflow
+description: Recover from a failed or ambiguous CUA action — re-observe, diagnose, and adapt
+version: 1.0.0
+author: cua
+tags:
+  - cua
+  - recovery
+  - retry
+  - diagnosis
+
+# Usage:
+#   recipes execute cua:recipes/recovery-workflow.yaml --context '{
+#     "failed_action": "click at (500, 300)",
+#     "expected_result": "Settings dialog should have opened",
+#     "actual_result": "Nothing visible changed on screen"
+#   }'
+
+context:
+  failed_action: ""
+  expected_result: ""
+  actual_result: ""
+
+steps:
+  - id: re-observe
+    agent: cua:cua-operator
+    prompt: |
+      A previous action failed or produced an ambiguous result.
+
+      **Failed action:** {{failed_action}}
+      **Expected:** {{expected_result}}
+      **Actual:** {{actual_result}}
+
+      First, capture fresh state using `cua` with action `observe`.
+      Report the FULL current state — do not assume anything from the previous observation.
+    output: fresh_observation
+    timeout: 120
+
+  - id: diagnose
+    agent: cua:cua-planner
+    prompt: |
+      Diagnose why the action failed:
+
+      **Failed action:** {{failed_action}}
+      **Expected:** {{expected_result}}
+      **Actual:** {{actual_result}}
+
+      **Fresh observation after re-observe:**
+      {{fresh_observation}}
+
+      Analyze:
+      1. Is the current state what was expected BEFORE the failed action? (action had no effect)
+      2. Is the current state something unexpected? (action had wrong effect)
+      3. Is the target element still visible? (in screenshot or semantic tree)
+      4. Could the failure be due to: wrong coordinates, wrong window focus, timing, permissions?
+
+      Recommend ONE of:
+      - **RETRY** with adjusted parameters (specify what to change)
+      - **ALTERNATIVE** approach (specify the new strategy)
+      - **ESCALATE** to user (explain what information is needed)
+    output: diagnosis
+    timeout: 180
+
+  - id: attempt-recovery
+    agent: cua:cua-operator
+    prompt: |
+      Based on the diagnosis:
+
+      {{diagnosis}}
+
+      If the recommendation is RETRY or ALTERNATIVE:
+      - Execute the recommended action
+      - Observe the result
+      - Report whether recovery succeeded
+
+      If the recommendation is ESCALATE:
+      - Do not take any action
+      - Summarize the situation for the user clearly
+    output: recovery_result
+    timeout: 180

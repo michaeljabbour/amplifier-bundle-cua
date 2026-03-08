@@ -1,0 +1,70 @@
+name: observe-and-act
+description: Basic operator loop — observe current screen state and perform a single action
+version: 1.0.0
+author: cua
+tags:
+  - cua
+  - observe
+  - action
+  - basic
+
+# Usage:
+#   recipes execute cua:recipes/observe-and-act.yaml --context '{
+#     "task_description": "Click the Submit button"
+#   }'
+
+context:
+  task_description: ""
+
+steps:
+  - id: observe-screen
+    agent: cua:cua-operator
+    prompt: |
+      Observe the current desktop state. Use the `cua` tool with action `observe`
+      to capture a full dual-world snapshot (screenshot + semantic tree + cursor + windows).
+
+      Report what you see:
+      - What application is focused?
+      - What are the main visible UI elements?
+      - What is the cursor position?
+      - What does the semantic tree show?
+    output: observation_report
+    timeout: 120
+
+  - id: plan-action
+    agent: cua:cua-operator
+    prompt: |
+      Based on your observation:
+
+      {{observation_report}}
+
+      The task is: {{task_description}}
+
+      Plan exactly ONE atomic action to make progress on this task.
+      Explain:
+      1. What action you will take (click, type, scroll, etc.)
+      2. The exact parameters (coordinates, text, etc.)
+      3. What you expect to change after the action
+      4. Your confidence level (high/medium/low)
+
+      If you cannot identify a clear action, explain why and what additional
+      information you need.
+    output: action_plan
+    timeout: 120
+
+  - id: execute-action
+    agent: cua:cua-operator
+    prompt: |
+      Execute the planned action:
+
+      {{action_plan}}
+
+      Use the `cua` tool to perform exactly one action.
+      After executing, immediately observe again to verify the result.
+
+      Report:
+      1. The action result status (success/failure/blocked/ambiguous)
+      2. What changed on screen after the action
+      3. Whether the result matches your expectations
+    output: action_result
+    timeout: 120

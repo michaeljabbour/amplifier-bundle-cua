@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tool-cua"
+version = "0.1.0"
+description = "Computer-use automation tool module for Amplifier"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+macos = [
+    "pyobjc-framework-Quartz>=10.0",
+    "pyobjc-framework-ApplicationServices>=10.0",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[project.entry-points."amplifier.modules"]
+tool-cua = "amplifier_module_tool_cua:mount"
+
+[tool.hatch.build.targets.wheel]
+packages = ["amplifier_module_tool_cua"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
