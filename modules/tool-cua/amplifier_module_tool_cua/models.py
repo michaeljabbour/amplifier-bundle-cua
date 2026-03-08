@@ -59,3 +59,32 @@ class WindowInfo:
     app_name: str
     bounds: dict[str, int]
     is_focused: bool = False
+
+
+@dataclass
+class SemanticElement:
+    """A node in the accessibility / semantic tree."""
+
+    role: str
+    label: str | None = None
+    value: str | None = None
+    bounds: dict[str, int] | None = None
+    children: list[SemanticElement] = field(default_factory=list)
+    attributes: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class Observation:
+    """Normalized dual-world observation combining visual and semantic state.
+
+    This is the primary data structure agents receive when observing
+    the current state of a target. Neither visual nor semantic is
+    treated as secondary — both are first-class.
+    """
+
+    screenshot_base64: str | None = None
+    screen_info: ScreenInfo | None = None
+    cursor_position: CursorPosition | None = None
+    focused_window: WindowInfo | None = None
+    windows: list[WindowInfo] = field(default_factory=list)
+    semantic_tree: list[SemanticElement] = field(default_factory=list)

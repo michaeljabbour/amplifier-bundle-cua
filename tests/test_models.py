@@ -6,7 +6,9 @@ from amplifier_module_tool_cua.models import (
     ActionResult,
     ActionStatus,
     CursorPosition,
+    Observation,
     ScreenInfo,
+    SemanticElement,
     WindowInfo,
 )
 
@@ -93,3 +95,57 @@ class TestWindowInfo:
             is_focused=True,
         )
         assert win.is_focused is True
+
+
+class TestSemanticElement:
+    def test_basic_element(self):
+        el = SemanticElement(role="AXButton", label="Submit")
+        assert el.role == "AXButton"
+        assert el.label == "Submit"
+        assert el.value is None
+        assert el.children == []
+
+    def test_element_with_children(self):
+        child = SemanticElement(role="AXStaticText", label="OK")
+        parent = SemanticElement(role="AXButton", label="Submit", children=[child])
+        assert len(parent.children) == 1
+        assert parent.children[0].role == "AXStaticText"
+
+    def test_element_with_bounds(self):
+        el = SemanticElement(
+            role="AXTextField",
+            label="Search",
+            bounds={"x": 10, "y": 20, "width": 200, "height": 30},
+        )
+        assert el.bounds["width"] == 200
+
+
+class TestObservation:
+    def test_empty_observation(self):
+        obs = Observation()
+        assert obs.screenshot_base64 is None
+        assert obs.screen_info is None
+        assert obs.cursor_position is None
+        assert obs.focused_window is None
+        assert obs.windows == []
+        assert obs.semantic_tree == []
+
+    def test_full_observation(self):
+        obs = Observation(
+            screenshot_base64="iVBORw...",
+            screen_info=ScreenInfo(width=1920, height=1080),
+            cursor_position=CursorPosition(x=500, y=300),
+            focused_window=WindowInfo(
+                title="test",
+                app_name="App",
+                bounds={"x": 0, "y": 0, "width": 800, "height": 600},
+                is_focused=True,
+            ),
+            windows=[],
+            semantic_tree=[SemanticElement(role="AXWindow", label="test")],
+        )
+        assert obs.screenshot_base64 == "iVBORw..."
+        assert obs.screen_info.width == 1920
+        assert obs.cursor_position.x == 500
+        assert obs.focused_window.is_focused is True
+        assert len(obs.semantic_tree) == 1
