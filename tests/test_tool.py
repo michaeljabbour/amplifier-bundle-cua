@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from amplifier_module_tool_cua import mount
 from amplifier_module_tool_cua.backends.fixture import FixtureBackend
 from amplifier_module_tool_cua.tool import CuaTool
 
@@ -115,4 +116,24 @@ class TestToolInputActions:
     @pytest.mark.asyncio
     async def test_move_cursor(self, tool):
         result = await tool.execute(arguments={"action": "move_cursor", "x": 100, "y": 200})
+        assert result["status"] == "success"
+
+
+class TestMount:
+    @pytest.mark.asyncio
+    async def test_mount_registers_tool(self, coordinator):
+        await mount(coordinator, config={"backend": "fixture"})
+        assert "cua" in coordinator._mounted.get("tools", {})
+
+    @pytest.mark.asyncio
+    async def test_mounted_tool_is_cua_tool(self, coordinator):
+        await mount(coordinator, config={"backend": "fixture"})
+        tool = coordinator._mounted["tools"]["cua"]
+        assert tool.name == "cua"
+
+    @pytest.mark.asyncio
+    async def test_mount_fixture_backend_works(self, coordinator):
+        await mount(coordinator, config={"backend": "fixture"})
+        tool = coordinator._mounted["tools"]["cua"]
+        result = await tool.execute(arguments={"action": "screenshot"})
         assert result["status"] == "success"
