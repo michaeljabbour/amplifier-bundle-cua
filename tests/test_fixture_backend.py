@@ -120,3 +120,58 @@ class TestFixtureActions:
         await backend.type_text("a")
         await backend.scroll(0, 0, dy=1)
         assert len(backend.action_log) == 3
+
+
+class TestGoldenObservations:
+    """Verify fixture backend returns consistent, known observation shapes."""
+
+    @pytest.mark.asyncio
+    async def test_screenshot_is_valid_base64_png(self, backend):
+        import base64
+
+        result = await backend.screenshot()
+        raw = base64.b64decode(result.data["screenshot_base64"])
+        # PNG magic bytes
+        assert raw[:4] == b"\x89PNG"
+
+    @pytest.mark.asyncio
+    async def test_semantic_tree_structure(self, backend):
+        result = await backend.semantic_tree()
+        tree = result.data["elements"]
+        # Root is an application
+        assert tree[0]["role"] == "AXApplication"
+        assert tree[0]["label"] == "FixtureApp"
+        # Has a window child
+        window = tree[0]["children"][0]
+        assert window["role"] == "AXWindow"
+        # Window has a button and a text field
+        roles = {child["role"] for child in window["children"]}
+        assert "AXButton" in roles
+        assert "AXTextField" in roles
+
+    @pytest.mark.asyncio
+    async def test_semantic_tree_has_bounds(self, backend):
+        result = await backend.semantic_tree()
+        button = result.data["elements"][0]["children"][0]["children"][0]
+        assert button["role"] == "AXButton"
+        assert button["bounds"]["width"] == 100
+        assert button["bounds"]["height"] == 30
+
+    @pytest.mark.asyncio
+    async def test_window_info_matches_semantic_tree(self, backend):
+        """Fixture's visual and semantic worlds should be consistent."""
+        win_result = await backend.window_info()
+        sem_result = await backend.semantic_tree()
+        focused = win_result.data["focused_window"]
+        sem_window = sem_result.data["elements"][0]["children"][0]
+        assert focused["title"] == sem_window["label"]
+
+    @pytest.mark.asyncio
+    async def test_default_screen_geometry(self, backend):
+        result = await backend.screen_info()
+        assert result.data == {"width": 1920, "height": 1080, "scale_factor": 1.0}
+
+    @pytest.mark.asyncio
+    async def test_default_cursor_is_center(self, backend):
+        result = await backend.cursor_position()
+        assert result.data == {"x": 960, "y": 540}
