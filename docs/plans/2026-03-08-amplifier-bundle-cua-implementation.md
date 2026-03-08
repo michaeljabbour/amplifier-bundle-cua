@@ -298,7 +298,7 @@ def coordinator() -> FakeCoordinator:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv sync
+cd /path/to/amplifier-bundle-cua && uv sync
 ```
 Expected: Virtual environment created in `.venv/`, dependencies installed.
 
@@ -435,7 +435,7 @@ class TestActionResult:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
 ```
 Expected: FAIL — `ImportError: cannot import name 'ActionResult' from 'amplifier_module_tool_cua.models'`
 
@@ -484,7 +484,7 @@ class ActionResult:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
 ```
 Expected: All 6 tests PASS.
 
@@ -556,7 +556,7 @@ class TestWindowInfo:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
 ```
 Expected: FAIL — `ImportError: cannot import name 'ScreenInfo'`
 
@@ -596,7 +596,7 @@ class WindowInfo:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
 ```
 Expected: All 11 tests PASS.
 
@@ -680,7 +680,7 @@ class TestObservation:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
 ```
 Expected: FAIL — `ImportError: cannot import name 'SemanticElement'`
 
@@ -722,7 +722,7 @@ class Observation:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_models.py -v
 ```
 Expected: All 17 tests PASS.
 
@@ -838,7 +838,7 @@ class TestTargetProtocol:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_target_protocol.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_target_protocol.py -v
 ```
 Expected: FAIL — `ImportError: cannot import name 'Target' from 'amplifier_module_tool_cua.target'`
 
@@ -935,7 +935,7 @@ class Target(Protocol):
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_target_protocol.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_target_protocol.py -v
 ```
 Expected: All 5 tests PASS.
 
@@ -1038,7 +1038,7 @@ class TestFixtureObservation:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_fixture_backend.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_fixture_backend.py -v
 ```
 Expected: FAIL — `ModuleNotFoundError` or `ImportError`
 
@@ -1203,7 +1203,7 @@ class FixtureBackend:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_fixture_backend.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_fixture_backend.py -v
 ```
 Expected: All 8 tests PASS.
 
@@ -1287,7 +1287,7 @@ class TestFixtureActions:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_fixture_backend.py::TestFixtureActions -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_fixture_backend.py::TestFixtureActions -v
 ```
 Expected: FAIL — `NotImplementedError`
 
@@ -1335,7 +1335,7 @@ In `modules/tool-cua/amplifier_module_tool_cua/backends/fixture.py`, replace the
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_fixture_backend.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_fixture_backend.py -v
 ```
 Expected: All 16 tests PASS.
 
@@ -1419,7 +1419,7 @@ These tests should pass immediately since the fixture backend already returns th
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_fixture_backend.py::TestGoldenObservations -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_fixture_backend.py::TestGoldenObservations -v
 ```
 Expected: All 6 tests PASS.
 
@@ -1531,7 +1531,7 @@ class TestToolObserveActions:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_tool.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_tool.py -v
 ```
 Expected: FAIL — `ImportError: cannot import name 'CuaTool' from 'amplifier_module_tool_cua.tool'`
 
@@ -1683,7 +1683,7 @@ class CuaTool:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_tool.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_tool.py -v
 ```
 Expected: All 10 tests PASS.
 
@@ -1754,7 +1754,7 @@ class TestToolInputActions:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_tool.py::TestToolInputActions -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_tool.py::TestToolInputActions -v
 ```
 Expected: FAIL — returns `{"status": "failure", "message": "Unknown action: click"}`
 
@@ -1811,7 +1811,7 @@ In `modules/tool-cua/amplifier_module_tool_cua/tool.py`, find the `# Input actio
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_tool.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_tool.py -v
 ```
 Expected: All 17 tests PASS.
 
@@ -1862,7 +1862,7 @@ class TestMount:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_tool.py::TestMount -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_tool.py::TestMount -v
 ```
 Expected: FAIL — `NotImplementedError: mount() not yet implemented`
 
@@ -1941,7 +1941,7 @@ def detect_backend() -> Target:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_tool.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_tool.py -v
 ```
 Expected: All 20 tests PASS.
 
@@ -1949,7 +1949,7 @@ Expected: All 20 tests PASS.
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/ -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/ -v
 ```
 Expected: All tests PASS (should be ~40+ tests at this point).
 
@@ -2047,7 +2047,7 @@ class TestMacOSScreenInfo:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py -v
 ```
 Expected: FAIL — `ImportError`
 
@@ -2208,7 +2208,7 @@ class MacOSBackend:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py -v
 ```
 Expected: All 5 tests PASS.
 
@@ -2326,7 +2326,7 @@ class TestMacOSInputActions:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py::TestMacOSCursorAndWindow -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py::TestMacOSCursorAndWindow -v
 ```
 Expected: FAIL — `NotImplementedError`
 
@@ -2542,7 +2542,7 @@ Also keep the `semantic_tree` stub as `raise NotImplementedError` — it will be
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py -v
 ```
 Expected: All 12 tests PASS.
 
@@ -2617,7 +2617,7 @@ class TestMacOSSemanticTree:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py::TestMacOSSemanticTree -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py::TestMacOSSemanticTree -v
 ```
 Expected: FAIL — `NotImplementedError`
 
@@ -2718,7 +2718,7 @@ In `modules/tool-cua/amplifier_module_tool_cua/backends/macos.py`, replace the `
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_macos_backend.py -v
 ```
 Expected: All 15 tests PASS.
 
@@ -2823,7 +2823,7 @@ class TestLinuxStub:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_stubs.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_stubs.py -v
 ```
 Expected: FAIL — `ImportError`
 
@@ -2965,7 +2965,7 @@ class LinuxStubBackend:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_stubs.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_stubs.py -v
 ```
 Expected: All 11 tests PASS.
 
@@ -3051,7 +3051,7 @@ class TestGetBackend:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_registry.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_registry.py -v
 ```
 Expected: FAIL — tests fail because the stub registry doesn't have `detect_backend` with `sys` access
 
@@ -3139,7 +3139,7 @@ def get_backend(name: str) -> Target:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_registry.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_registry.py -v
 ```
 Expected: All 8 tests PASS.
 
@@ -3969,7 +3969,7 @@ class TestConformanceCapabilityConsistency:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_conformance.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_conformance.py -v
 ```
 Expected: All tests PASS. Each test runs 3 times (once per backend).
 
@@ -4113,7 +4113,7 @@ class TestSafetyBehavior:
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/test_integration.py -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/test_integration.py -v
 ```
 Expected: All tests PASS.
 
@@ -4121,7 +4121,7 @@ Expected: All tests PASS.
 
 Run:
 ```bash
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/ -v
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/ -v
 ```
 Expected: ALL tests PASS. Should be approximately 80-90 tests total.
 
@@ -4140,7 +4140,7 @@ After all 26 tasks are complete, run these final verification commands:
 
 ```bash
 # Full test suite
-cd /Users/michaeljabbour/dev/amplifier-bundle-cua && uv run pytest tests/ -v --tb=short
+cd /path/to/amplifier-bundle-cua && uv run pytest tests/ -v --tb=short
 
 # Linting
 uv run ruff check .
