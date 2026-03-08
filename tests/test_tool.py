@@ -137,3 +137,29 @@ class TestMount:
         tool = coordinator._mounted["tools"]["cua"]
         result = await tool.execute(arguments={"action": "screenshot"})
         assert result["status"] == "success"
+
+
+class TestExecuteCallConvention:
+    """Regression tests for the execute() call convention.
+
+    The real Amplifier runtime dispatches tool.execute(input_dict) positionally,
+    NOT as a keyword argument.  The original signature used a keyword-only '*'
+    separator which caused every live tool action to fail with:
+
+        CuaTool.execute() takes 1 positional argument but 2 were given
+
+    These tests explicitly cover BOTH call styles so any future signature
+    change that breaks the positional form is caught immediately.
+    """
+
+    @pytest.mark.asyncio
+    async def test_execute_positional_runtime_form(self, tool):
+        """Runtime dispatches positionally: tool.execute(input_dict)."""
+        result = await tool.execute({"action": "screenshot"})
+        assert result["status"] == "success"
+
+    @pytest.mark.asyncio
+    async def test_execute_keyword_form(self, tool):
+        """Keyword form must also keep working for direct callers."""
+        result = await tool.execute(arguments={"action": "screenshot"})
+        assert result["status"] == "success"

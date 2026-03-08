@@ -80,7 +80,7 @@ class CuaTool:
             "required": ["action"],
         }
 
-    async def execute(self, *, arguments: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
+    async def execute(self, arguments: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
         """Dispatch to the appropriate action handler."""
         action = arguments.get("action", "")
 

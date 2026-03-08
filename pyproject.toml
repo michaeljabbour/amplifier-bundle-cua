@@ -12,6 +12,9 @@ dev = [
     "ruff>=0.4.0",
 ]
 
+[tool.setuptools]
+packages = []
+
 [tool.uv.workspace]
 members = [
     "modules/tool-cua",
