@@ -1,0 +1,4 @@
+bundle:
+  name: behavior-cua-recipes
+  version: 0.1.0
+  description: Repeatable CUA workflows — observe-and-act, bounded tasks, recovery

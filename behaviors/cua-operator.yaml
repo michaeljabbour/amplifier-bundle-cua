@@ -1,0 +1,14 @@
+bundle:
+  name: behavior-cua-operator
+  version: 0.1.0
+  description: CUA operator agent with dual-world reasoning and safety context
+
+agents:
+  include:
+    - cua:cua-operator
+    - cua:cua-planner
+
+context:
+  include:
+    - cua:context/action-confidence.md
+    - cua:context/recovery-patterns.md

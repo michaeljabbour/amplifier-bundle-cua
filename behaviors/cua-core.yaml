@@ -1,0 +1,12 @@
+bundle:
+  name: behavior-cua-core
+  version: 0.1.0
+  description: Core CUA primitives — screenshot, input, window info, semantic inspection
+
+tools:
+  - module: tool-cua
+    source: ../modules/tool-cua
+
+context:
+  include:
+    - cua:context/dual-world-reasoning.md
