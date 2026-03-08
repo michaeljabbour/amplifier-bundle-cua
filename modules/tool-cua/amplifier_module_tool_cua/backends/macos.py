@@ -120,31 +120,221 @@ class MacOSBackend:
             scale = 1.0
         return {"width": int(width), "height": int(height), "scale_factor": float(scale)}
 
-    # -- Stubs for remaining methods (implemented in Task 15 and 16) --
+    # -- Cursor position --
 
     async def cursor_position(self) -> ActionResult:
-        raise NotImplementedError
+        try:
+            x, y = self._get_cursor_sync()
+            return ActionResult(status=ActionStatus.SUCCESS, data={"x": x, "y": y})
+        except Exception as exc:
+            return ActionResult(status=ActionStatus.FAILURE, message=str(exc))
+
+    def _get_cursor_sync(self) -> tuple[int, int]:
+        """Get cursor position via Quartz."""
+        import Quartz  # type: ignore[reportMissingImports]
+
+        event = Quartz.CGEventCreate(None)
+        point = Quartz.CGEventGetLocation(event)
+        return int(point.x), int(point.y)
+
+    # -- Window info --
 
     async def window_info(self) -> ActionResult:
-        raise NotImplementedError
+        try:
+            windows = self._get_windows_sync()
+            focused = next((w for w in windows if w.get("is_focused")), None)
+            return ActionResult(
+                status=ActionStatus.SUCCESS,
+                data={"windows": windows, "focused_window": focused},
+            )
+        except Exception as exc:
+            return ActionResult(status=ActionStatus.FAILURE, message=str(exc))
 
-    async def semantic_tree(self, window_title: str | None = None) -> ActionResult:
-        raise NotImplementedError
+    def _get_windows_sync(self) -> list[dict[str, Any]]:
+        """Get on-screen window list via Quartz."""
+        import Quartz  # type: ignore[reportMissingImports]
+
+        window_list = Quartz.CGWindowListCopyWindowInfo(
+            Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
+            Quartz.kCGNullWindowID,
+        )
+        results = []
+        for w in window_list or []:
+            bounds_dict = w.get(Quartz.kCGWindowBounds, {})
+            results.append(
+                {
+                    "title": str(w.get(Quartz.kCGWindowName, "") or ""),
+                    "app_name": str(w.get(Quartz.kCGWindowOwnerName, "") or ""),
+                    "bounds": {
+                        "x": int(bounds_dict.get("X", 0)),
+                        "y": int(bounds_dict.get("Y", 0)),
+                        "width": int(bounds_dict.get("Width", 0)),
+                        "height": int(bounds_dict.get("Height", 0)),
+                    },
+                    "is_focused": int(w.get(Quartz.kCGWindowLayer, 999)) == 0,
+                }
+            )
+        return results
+
+    # -- Click --
 
     async def click(self, x: int, y: int, button: str = "left") -> ActionResult:
-        raise NotImplementedError
+        try:
+            await self._perform_click(x, y, button)
+            return ActionResult(status=ActionStatus.SUCCESS)
+        except Exception as exc:
+            return ActionResult(status=ActionStatus.FAILURE, message=str(exc))
+
+    async def _perform_click(self, x: int, y: int, button: str) -> None:
+        """Perform a mouse click via Quartz CGEvent."""
+        import Quartz  # type: ignore[reportMissingImports]
+
+        point = Quartz.CGPoint(x, y)
+        btn_map = {
+            "left": (
+                Quartz.kCGEventLeftMouseDown,
+                Quartz.kCGEventLeftMouseUp,
+                Quartz.kCGMouseButtonLeft,
+            ),
+            "right": (
+                Quartz.kCGEventRightMouseDown,
+                Quartz.kCGEventRightMouseUp,
+                Quartz.kCGMouseButtonRight,
+            ),
+        }
+        down_type, up_type, btn = btn_map.get(button, btn_map["left"])
+        ev_down = Quartz.CGEventCreateMouseEvent(None, down_type, point, btn)
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, ev_down)
+        ev_up = Quartz.CGEventCreateMouseEvent(None, up_type, point, btn)
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, ev_up)
+
+    # -- Double click --
 
     async def double_click(self, x: int, y: int) -> ActionResult:
-        raise NotImplementedError
+        try:
+            await self._perform_click(x, y, "left")
+            await self._perform_click(x, y, "left")
+            return ActionResult(status=ActionStatus.SUCCESS)
+        except Exception as exc:
+            return ActionResult(status=ActionStatus.FAILURE, message=str(exc))
+
+    # -- Type text --
 
     async def type_text(self, text: str) -> ActionResult:
-        raise NotImplementedError
+        try:
+            await self._perform_type(text)
+            return ActionResult(status=ActionStatus.SUCCESS)
+        except Exception as exc:
+            return ActionResult(status=ActionStatus.FAILURE, message=str(exc))
+
+    async def _perform_type(self, text: str) -> None:
+        """Type characters via Quartz keyboard events."""
+        import Quartz  # type: ignore[reportMissingImports]
+
+        for char in text:
+            ev_down = Quartz.CGEventCreateKeyboardEvent(None, 0, True)
+            Quartz.CGEventKeyboardSetUnicodeString(ev_down, len(char), char)
+            Quartz.CGEventPost(Quartz.kCGHIDEventTap, ev_down)
+            ev_up = Quartz.CGEventCreateKeyboardEvent(None, 0, False)
+            Quartz.CGEventKeyboardSetUnicodeString(ev_up, len(char), char)
+            Quartz.CGEventPost(Quartz.kCGHIDEventTap, ev_up)
+
+    # -- Key press --
 
     async def key_press(self, key: str, modifiers: list[str] | None = None) -> ActionResult:
-        raise NotImplementedError
+        try:
+            await self._perform_key_press(key, modifiers)
+            return ActionResult(status=ActionStatus.SUCCESS)
+        except Exception as exc:
+            return ActionResult(status=ActionStatus.FAILURE, message=str(exc))
+
+    _KEY_CODES: dict[str, int] = {
+        "return": 36,
+        "tab": 48,
+        "space": 49,
+        "delete": 51,
+        "escape": 53,
+        "up": 126,
+        "down": 125,
+        "left": 123,
+        "right": 124,
+        "f1": 122,
+        "f2": 120,
+        "f3": 99,
+        "f4": 118,
+        "f5": 96,
+        "f6": 97,
+    }
+
+    async def _perform_key_press(self, key: str, modifiers: list[str] | None) -> None:
+        """Press a key with optional modifiers via Quartz."""
+        import Quartz  # type: ignore[reportMissingImports]
+
+        key_code = self._KEY_CODES.get(key.lower(), 0)
+        flags = 0
+        for mod in modifiers or []:
+            if mod == "command":
+                flags |= Quartz.kCGEventFlagMaskCommand
+            elif mod == "shift":
+                flags |= Quartz.kCGEventFlagMaskShift
+            elif mod == "option":
+                flags |= Quartz.kCGEventFlagMaskAlternate
+            elif mod == "control":
+                flags |= Quartz.kCGEventFlagMaskControl
+
+        ev_down = Quartz.CGEventCreateKeyboardEvent(None, key_code, True)
+        if flags:
+            Quartz.CGEventSetFlags(ev_down, flags)
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, ev_down)
+
+        ev_up = Quartz.CGEventCreateKeyboardEvent(None, key_code, False)
+        if flags:
+            Quartz.CGEventSetFlags(ev_up, flags)
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, ev_up)
+
+    # -- Scroll --
 
     async def scroll(self, x: int, y: int, dx: int = 0, dy: int = 0) -> ActionResult:
-        raise NotImplementedError
+        try:
+            await self._perform_scroll(x, y, dx, dy)
+            return ActionResult(status=ActionStatus.SUCCESS)
+        except Exception as exc:
+            return ActionResult(status=ActionStatus.FAILURE, message=str(exc))
+
+    async def _perform_scroll(self, x: int, y: int, dx: int, dy: int) -> None:
+        """Scroll at position via Quartz."""
+        import Quartz  # type: ignore[reportMissingImports]
+
+        # Move cursor to position first
+        move_ev = Quartz.CGEventCreateMouseEvent(
+            None, Quartz.kCGEventMouseMoved, Quartz.CGPoint(x, y), 0
+        )
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, move_ev)
+        # Scroll
+        scroll_ev = Quartz.CGEventCreateScrollWheelEvent(
+            None, Quartz.kCGScrollEventUnitLine, 2, dy, dx
+        )
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, scroll_ev)
+
+    # -- Move cursor --
 
     async def move_cursor(self, x: int, y: int) -> ActionResult:
+        try:
+            await self._perform_move(x, y)
+            return ActionResult(status=ActionStatus.SUCCESS)
+        except Exception as exc:
+            return ActionResult(status=ActionStatus.FAILURE, message=str(exc))
+
+    async def _perform_move(self, x: int, y: int) -> None:
+        """Move cursor without clicking via Quartz."""
+        import Quartz  # type: ignore[reportMissingImports]
+
+        event = Quartz.CGEventCreateMouseEvent(
+            None, Quartz.kCGEventMouseMoved, Quartz.CGPoint(x, y), 0
+        )
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, event)
+
+    # -- Semantic tree (stub — implemented in Task 16) --
+
+    async def semantic_tree(self, window_title: str | None = None) -> ActionResult:
         raise NotImplementedError
