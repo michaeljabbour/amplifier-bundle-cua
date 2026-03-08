@@ -64,3 +64,59 @@ class TestFixtureObservation:
         assert result.status == ActionStatus.SUCCESS
         assert "elements" in result.data
         assert len(result.data["elements"]) > 0
+
+
+class TestFixtureActions:
+    @pytest.mark.asyncio
+    async def test_click(self, backend):
+        result = await backend.click(500, 300)
+        assert result.status == ActionStatus.SUCCESS
+        assert backend.action_log[-1]["action"] == "click"
+        assert backend.action_log[-1]["x"] == 500
+
+    @pytest.mark.asyncio
+    async def test_click_updates_cursor(self, backend):
+        await backend.click(500, 300)
+        pos = await backend.cursor_position()
+        assert pos.data["x"] == 500
+        assert pos.data["y"] == 300
+
+    @pytest.mark.asyncio
+    async def test_double_click(self, backend):
+        result = await backend.double_click(200, 400)
+        assert result.status == ActionStatus.SUCCESS
+        assert backend.action_log[-1]["action"] == "double_click"
+
+    @pytest.mark.asyncio
+    async def test_type_text(self, backend):
+        result = await backend.type_text("hello world")
+        assert result.status == ActionStatus.SUCCESS
+        assert backend.action_log[-1]["text"] == "hello world"
+
+    @pytest.mark.asyncio
+    async def test_key_press(self, backend):
+        result = await backend.key_press("return", modifiers=["command"])
+        assert result.status == ActionStatus.SUCCESS
+        assert backend.action_log[-1]["key"] == "return"
+        assert backend.action_log[-1]["modifiers"] == ["command"]
+
+    @pytest.mark.asyncio
+    async def test_scroll(self, backend):
+        result = await backend.scroll(400, 300, dx=0, dy=-3)
+        assert result.status == ActionStatus.SUCCESS
+        assert backend.action_log[-1]["dy"] == -3
+
+    @pytest.mark.asyncio
+    async def test_move_cursor(self, backend):
+        result = await backend.move_cursor(100, 200)
+        assert result.status == ActionStatus.SUCCESS
+        pos = await backend.cursor_position()
+        assert pos.data["x"] == 100
+        assert pos.data["y"] == 200
+
+    @pytest.mark.asyncio
+    async def test_action_log_accumulates(self, backend):
+        await backend.click(10, 20)
+        await backend.type_text("a")
+        await backend.scroll(0, 0, dy=1)
+        assert len(backend.action_log) == 3

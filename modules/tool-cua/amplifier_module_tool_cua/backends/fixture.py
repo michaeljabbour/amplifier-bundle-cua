@@ -132,19 +132,37 @@ class FixtureBackend:
     # -- Action methods (implemented in Task 9) --
 
     async def click(self, x: int, y: int, button: str = "left") -> ActionResult:
-        raise NotImplementedError
+        self._cursor_x = x
+        self._cursor_y = y
+        self._action_log.append({"action": "click", "x": x, "y": y, "button": button})
+        return ActionResult(status=ActionStatus.SUCCESS)
 
     async def double_click(self, x: int, y: int) -> ActionResult:
-        raise NotImplementedError
+        self._cursor_x = x
+        self._cursor_y = y
+        self._action_log.append({"action": "double_click", "x": x, "y": y})
+        return ActionResult(status=ActionStatus.SUCCESS)
 
     async def type_text(self, text: str) -> ActionResult:
-        raise NotImplementedError
+        self._action_log.append({"action": "type_text", "text": text})
+        return ActionResult(status=ActionStatus.SUCCESS)
 
     async def key_press(self, key: str, modifiers: list[str] | None = None) -> ActionResult:
-        raise NotImplementedError
+        self._action_log.append(
+            {
+                "action": "key_press",
+                "key": key,
+                "modifiers": modifiers or [],
+            }
+        )
+        return ActionResult(status=ActionStatus.SUCCESS)
 
     async def scroll(self, x: int, y: int, dx: int = 0, dy: int = 0) -> ActionResult:
-        raise NotImplementedError
+        self._action_log.append({"action": "scroll", "x": x, "y": y, "dx": dx, "dy": dy})
+        return ActionResult(status=ActionStatus.SUCCESS)
 
     async def move_cursor(self, x: int, y: int) -> ActionResult:
-        raise NotImplementedError
+        self._cursor_x = x
+        self._cursor_y = y
+        self._action_log.append({"action": "move_cursor", "x": x, "y": y})
+        return ActionResult(status=ActionStatus.SUCCESS)
