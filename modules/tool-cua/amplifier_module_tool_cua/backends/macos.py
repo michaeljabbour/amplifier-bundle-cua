@@ -334,7 +334,88 @@ class MacOSBackend:
         )
         Quartz.CGEventPost(Quartz.kCGHIDEventTap, event)
 
-    # -- Semantic tree (stub — implemented in Task 16) --
+    # -- Semantic tree --
 
     async def semantic_tree(self, window_title: str | None = None) -> ActionResult:
-        raise NotImplementedError
+        try:
+            elements = self._get_semantic_tree_sync(window_title=window_title)
+            return ActionResult(status=ActionStatus.SUCCESS, data={"elements": elements})
+        except Exception as exc:
+            return ActionResult(status=ActionStatus.FAILURE, message=str(exc))
+
+    def _get_semantic_tree_sync(
+        self, window_title: str | None = None, max_depth: int = 5
+    ) -> list[dict[str, Any]]:
+        """Get accessibility tree via ApplicationServices AXUIElement API.
+
+        Requires Accessibility permissions in System Settings > Privacy.
+        """
+        import ApplicationServices as AX  # type: ignore[reportMissingImports]
+
+        system = AX.AXUIElementCreateSystemWide()
+        err, focused_app = AX.AXUIElementCopyAttributeValue(system, "AXFocusedApplication", None)
+        if err != 0 or focused_app is None:
+            return []
+
+        def traverse(element: Any, depth: int = 0) -> dict[str, Any] | None:
+            if depth > max_depth:
+                return None
+
+            err, role = AX.AXUIElementCopyAttributeValue(element, "AXRole", None)
+            if err != 0:
+                return None
+
+            err, title = AX.AXUIElementCopyAttributeValue(element, "AXTitle", None)
+            err, value = AX.AXUIElementCopyAttributeValue(element, "AXValue", None)
+            err, desc = AX.AXUIElementCopyAttributeValue(element, "AXDescription", None)
+
+            node: dict[str, Any] = {
+                "role": str(role) if role else "",
+                "label": str(title or desc or ""),
+                "value": str(value) if value else None,
+                "bounds": None,
+                "children": [],
+            }
+
+            # Try to get position and size
+            try:
+                err, pos_val = AX.AXUIElementCopyAttributeValue(element, "AXPosition", None)
+                err2, size_val = AX.AXUIElementCopyAttributeValue(element, "AXSize", None)
+                if err == 0 and err2 == 0 and pos_val and size_val:
+                    pos_point = AX.AXValueGetValue(pos_val, AX.kAXValueCGPointType, None)
+                    size_size = AX.AXValueGetValue(size_val, AX.kAXValueCGSizeType, None)
+                    if pos_point and size_size:
+                        node["bounds"] = {
+                            "x": int(pos_point.x),
+                            "y": int(pos_point.y),
+                            "width": int(size_size.width),
+                            "height": int(size_size.height),
+                        }
+            except Exception:
+                pass  # Bounds are best-effort
+
+            # Recurse into children
+            err, children = AX.AXUIElementCopyAttributeValue(element, "AXChildren", None)
+            if err == 0 and children:
+                for child in children:
+                    child_node = traverse(child, depth + 1)
+                    if child_node:
+                        node["children"].append(child_node)
+
+            return node
+
+        tree = traverse(focused_app)
+        if tree is None:
+            return []
+
+        # If window_title filter is specified, find matching windows
+        if window_title:
+            matching = [
+                c
+                for c in tree.get("children", [])
+                if c.get("label", "").lower() == window_title.lower()
+                or window_title.lower() in c.get("label", "").lower()
+            ]
+            return matching if matching else [tree]
+
+        return [tree]

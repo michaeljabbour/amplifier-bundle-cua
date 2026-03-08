@@ -145,3 +145,62 @@ class TestMacOSInputActions:
         monkeypatch.setattr(macos_backend, "_perform_move", fake_move)
         result = await macos_backend.move_cursor(100, 200)
         assert result.status == ActionStatus.SUCCESS
+
+
+class TestMacOSSemanticTree:
+    @pytest.mark.asyncio
+    async def test_semantic_tree_success(self, macos_backend, monkeypatch):
+        def fake_tree(window_title=None):
+            return [
+                {
+                    "role": "AXApplication",
+                    "label": "TestApp",
+                    "value": None,
+                    "bounds": None,
+                    "children": [
+                        {
+                            "role": "AXWindow",
+                            "label": "Main",
+                            "value": None,
+                            "bounds": None,
+                            "children": [],
+                        },
+                    ],
+                },
+            ]
+
+        monkeypatch.setattr(macos_backend, "_get_semantic_tree_sync", fake_tree)
+        result = await macos_backend.semantic_tree()
+        assert result.status == ActionStatus.SUCCESS
+        assert result.data["elements"][0]["role"] == "AXApplication"
+        assert len(result.data["elements"][0]["children"]) == 1
+
+    @pytest.mark.asyncio
+    async def test_semantic_tree_failure(self, macos_backend, monkeypatch):
+        def failing_tree(window_title=None):
+            raise RuntimeError("accessibility not enabled")
+
+        monkeypatch.setattr(macos_backend, "_get_semantic_tree_sync", failing_tree)
+        result = await macos_backend.semantic_tree()
+        assert result.status == ActionStatus.FAILURE
+        assert "accessibility" in result.message.lower()
+
+    @pytest.mark.asyncio
+    async def test_semantic_tree_with_window_filter(self, macos_backend, monkeypatch):
+        def filtered_tree(window_title=None):
+            if window_title == "Settings":
+                return [
+                    {
+                        "role": "AXWindow",
+                        "label": "Settings",
+                        "value": None,
+                        "bounds": None,
+                        "children": [],
+                    }
+                ]
+            return []
+
+        monkeypatch.setattr(macos_backend, "_get_semantic_tree_sync", filtered_tree)
+        result = await macos_backend.semantic_tree(window_title="Settings")
+        assert result.status == ActionStatus.SUCCESS
+        assert result.data["elements"][0]["label"] == "Settings"
