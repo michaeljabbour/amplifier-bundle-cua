@@ -37,7 +37,7 @@ class MacOSBackend:
             self._available = False
             return
         try:
-            import Quartz  # noqa: F401
+            import Quartz  # noqa: F401  # type: ignore[reportMissingImports]
         except ImportError:
             self._available = False
 
@@ -107,7 +107,7 @@ class MacOSBackend:
 
     def _get_screen_info_sync(self) -> dict[str, Any]:
         """Get main display geometry via Quartz."""
-        import Quartz
+        import Quartz  # type: ignore[reportMissingImports]
 
         display = Quartz.CGMainDisplayID()
         width = Quartz.CGDisplayPixelsWide(display)
