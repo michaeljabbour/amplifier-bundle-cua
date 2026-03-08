@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import pytest
-
 import amplifier_module_tool_cua as cua
+import pytest
 from amplifier_module_tool_cua import mount
 
 
