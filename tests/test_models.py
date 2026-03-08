@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
-from amplifier_module_tool_cua.models import ActionResult, ActionStatus
+from amplifier_module_tool_cua.models import (
+    ActionResult,
+    ActionStatus,
+    CursorPosition,
+    ScreenInfo,
+    WindowInfo,
+)
 
 
 class TestActionStatus:
@@ -46,3 +52,44 @@ class TestActionResult:
             message="click executed but state unchanged",
         )
         assert result.status == ActionStatus.AMBIGUOUS
+
+
+class TestScreenInfo:
+    def test_basic_screen(self):
+        screen = ScreenInfo(width=1920, height=1080)
+        assert screen.width == 1920
+        assert screen.height == 1080
+        assert screen.scale_factor == 1.0
+
+    def test_retina_screen(self):
+        screen = ScreenInfo(width=1440, height=900, scale_factor=2.0)
+        assert screen.scale_factor == 2.0
+
+
+class TestCursorPosition:
+    def test_position(self):
+        pos = CursorPosition(x=100, y=200)
+        assert pos.x == 100
+        assert pos.y == 200
+
+
+class TestWindowInfo:
+    def test_basic_window(self):
+        win = WindowInfo(
+            title="Untitled",
+            app_name="TextEdit",
+            bounds={"x": 0, "y": 0, "width": 800, "height": 600},
+        )
+        assert win.title == "Untitled"
+        assert win.app_name == "TextEdit"
+        assert win.bounds["width"] == 800
+        assert win.is_focused is False
+
+    def test_focused_window(self):
+        win = WindowInfo(
+            title="main.py",
+            app_name="VS Code",
+            bounds={"x": 100, "y": 50, "width": 1200, "height": 800},
+            is_focused=True,
+        )
+        assert win.is_focused is True

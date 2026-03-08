@@ -32,3 +32,30 @@ class ActionResult:
     status: ActionStatus
     message: str = ""
     data: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ScreenInfo:
+    """Display geometry."""
+
+    width: int
+    height: int
+    scale_factor: float = 1.0
+
+
+@dataclass
+class CursorPosition:
+    """Cursor coordinates in screen space."""
+
+    x: int
+    y: int
+
+
+@dataclass
+class WindowInfo:
+    """Metadata about a single window."""
+
+    title: str
+    app_name: str
+    bounds: dict[str, int]
+    is_focused: bool = False
