@@ -98,7 +98,46 @@ class CuaTool:
                 return self._to_dict(await self._backend.semantic_tree(window_title=wt))
             elif action == "observe":
                 return await self._handle_observe()
-            # Input actions will be added in Task 12
+            elif action == "click":
+                return self._to_dict(
+                    await self._backend.click(
+                        x=arguments.get("x", 0),
+                        y=arguments.get("y", 0),
+                        button=arguments.get("button", "left"),
+                    )
+                )
+            elif action == "double_click":
+                return self._to_dict(
+                    await self._backend.double_click(
+                        x=arguments.get("x", 0),
+                        y=arguments.get("y", 0),
+                    )
+                )
+            elif action == "type_text":
+                return self._to_dict(await self._backend.type_text(text=arguments.get("text", "")))
+            elif action == "key_press":
+                return self._to_dict(
+                    await self._backend.key_press(
+                        key=arguments.get("key", ""),
+                        modifiers=arguments.get("modifiers"),
+                    )
+                )
+            elif action == "scroll":
+                return self._to_dict(
+                    await self._backend.scroll(
+                        x=arguments.get("x", 0),
+                        y=arguments.get("y", 0),
+                        dx=arguments.get("dx", 0),
+                        dy=arguments.get("dy", 0),
+                    )
+                )
+            elif action == "move_cursor":
+                return self._to_dict(
+                    await self._backend.move_cursor(
+                        x=arguments.get("x", 0),
+                        y=arguments.get("y", 0),
+                    )
+                )
             else:
                 return {"status": "failure", "message": f"Unknown action: {action}", "data": {}}
         except Exception as exc:

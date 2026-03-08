@@ -73,3 +73,46 @@ class TestToolObserveActions:
         result = await tool.execute(arguments={"action": "fly_to_moon"})
         assert result["status"] == "failure"
         assert "unknown" in result["message"].lower()
+
+
+class TestToolInputActions:
+    @pytest.mark.asyncio
+    async def test_click(self, tool):
+        result = await tool.execute(arguments={"action": "click", "x": 500, "y": 300})
+        assert result["status"] == "success"
+
+    @pytest.mark.asyncio
+    async def test_click_with_button(self, tool):
+        result = await tool.execute(
+            arguments={"action": "click", "x": 100, "y": 200, "button": "right"}
+        )
+        assert result["status"] == "success"
+
+    @pytest.mark.asyncio
+    async def test_double_click(self, tool):
+        result = await tool.execute(arguments={"action": "double_click", "x": 300, "y": 400})
+        assert result["status"] == "success"
+
+    @pytest.mark.asyncio
+    async def test_type_text(self, tool):
+        result = await tool.execute(arguments={"action": "type_text", "text": "hello"})
+        assert result["status"] == "success"
+
+    @pytest.mark.asyncio
+    async def test_key_press(self, tool):
+        result = await tool.execute(
+            arguments={"action": "key_press", "key": "return", "modifiers": ["command"]}
+        )
+        assert result["status"] == "success"
+
+    @pytest.mark.asyncio
+    async def test_scroll(self, tool):
+        result = await tool.execute(
+            arguments={"action": "scroll", "x": 400, "y": 300, "dx": 0, "dy": -3}
+        )
+        assert result["status"] == "success"
+
+    @pytest.mark.asyncio
+    async def test_move_cursor(self, tool):
+        result = await tool.execute(arguments={"action": "move_cursor", "x": 100, "y": 200})
+        assert result["status"] == "success"
