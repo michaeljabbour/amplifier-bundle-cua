@@ -117,6 +117,7 @@ class TestSemanticElement:
             label="Search",
             bounds={"x": 10, "y": 20, "width": 200, "height": 30},
         )
+        assert el.bounds is not None
         assert el.bounds["width"] == 200
 
 
@@ -145,7 +146,10 @@ class TestObservation:
             semantic_tree=[SemanticElement(role="AXWindow", label="test")],
         )
         assert obs.screenshot_base64 == "iVBORw..."
+        assert obs.screen_info is not None
         assert obs.screen_info.width == 1920
+        assert obs.cursor_position is not None
         assert obs.cursor_position.x == 500
+        assert obs.focused_window is not None
         assert obs.focused_window.is_focused is True
         assert len(obs.semantic_tree) == 1
