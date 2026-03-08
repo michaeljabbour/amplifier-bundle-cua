@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from amplifier_module_tool_cua import mount
 from amplifier_module_tool_cua.backends.fixture import FixtureBackend
 from amplifier_module_tool_cua.tool import CuaTool
 
@@ -116,9 +117,6 @@ class TestToolInputActions:
     async def test_move_cursor(self, tool):
         result = await tool.execute(arguments={"action": "move_cursor", "x": 100, "y": 200})
         assert result["status"] == "success"
-
-
-from amplifier_module_tool_cua import mount  # noqa: E402
 
 
 class TestMount:
