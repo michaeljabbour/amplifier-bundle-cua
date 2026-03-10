@@ -13,21 +13,38 @@ from ..target import Target
 def detect_backend() -> Target:
     """Auto-detect and return the appropriate backend for the current platform.
 
-    Falls back to FixtureBackend if no platform-specific backend is available.
+    Raises RuntimeError if the platform backend cannot be initialized.
+    Use get_backend("fixture") or set ``backend: fixture`` explicitly for CI/testing.
     """
     if sys.platform == "darwin":
         try:
             from .macos import MacOSBackend
 
             backend = MacOSBackend()
-            if backend._available:
-                return backend
-        except Exception:
-            pass
-        # Fall through to fixture if macOS backend can't initialize
-        from .fixture import FixtureBackend
-
-        return FixtureBackend()
+        except Exception as exc:
+            raise RuntimeError(
+                "macOS backend could not be initialized. "
+                "Install the required dependencies:\n\n"
+                "  python -m pip install"
+                ' "pyobjc-framework-Quartz>=10.0"'
+                ' "pyobjc-framework-ApplicationServices>=10.0"\n\n'
+                "Accessibility permission is also required (System Settings > Privacy"
+                " & Security > Accessibility) for semantic tree and input actions.\n\n"
+                "For CI or testing without a real desktop, set backend: fixture explicitly."
+            ) from exc
+        if not backend._available:
+            raise RuntimeError(
+                "macOS backend is not available. Quartz/pyobjc may be missing or"
+                " Accessibility permission has not been granted.\n\n"
+                "Install the required dependencies:\n\n"
+                "  python -m pip install"
+                ' "pyobjc-framework-Quartz>=10.0"'
+                ' "pyobjc-framework-ApplicationServices>=10.0"\n\n'
+                "Accessibility permission is also required (System Settings > Privacy"
+                " & Security > Accessibility) for semantic tree and input actions.\n\n"
+                "For CI or testing without a real desktop, set backend: fixture explicitly."
+            )
+        return backend
     elif sys.platform == "win32":
         from .windows import WindowsStubBackend
 
@@ -37,9 +54,10 @@ def detect_backend() -> Target:
 
         return LinuxStubBackend()
     else:
-        from .fixture import FixtureBackend
-
-        return FixtureBackend()
+        raise RuntimeError(
+            f"No backend is available for platform {sys.platform!r}. "
+            "For CI or testing without a real desktop, set backend: fixture explicitly."
+        )
 
 
 def get_backend(name: str) -> Target:
