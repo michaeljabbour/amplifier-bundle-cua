@@ -78,6 +78,24 @@ uv run ruff format --check .
 uv run pyright
 ```
 
+> **Important — exit code 0 does not prove `tool-cua` loaded.**
+> Amplifier treats tool/module load failures as non-fatal and can complete a session successfully
+> even if `tool-cua` never mounted. An exit code of 0 from `amplifier run` is **not** an
+> authoritative signal that the module loaded or that the macOS fail-fast behaviour fired
+> correctly.
+>
+> **Authoritative verification methods for this bundle's fail-fast behaviour:**
+>
+> 1. Run the registry tests directly:
+>    ```bash
+>    uv run pytest tests/test_registry.py -v
+>    ```
+> 2. Inspect stderr for Amplifier's module-load error line:
+>    ```
+>    Failed to load module 'tool-cua'
+>    ```
+>    If that line is absent, the module loaded (or the run never attempted to load it).
+
 ---
 
 ## Smoke test — local clone with fixture backend
@@ -163,3 +181,40 @@ Append `@<branch-or-sha>` to the git URL:
 ```bash
 amplifier run --bundle git+https://github.com/michaeljabbour/amplifier-bundle-cua@my-branch ...
 ```
+
+---
+
+## macOS real backend requirements
+
+The `auto` backend (and the default when no backend is configured) on macOS **fails fast** if the required pyobjc dependencies are missing — it will **not** silently fall back to fixture data. This makes misconfiguration immediately visible rather than producing confusing no-op behaviour.
+
+### Install pyobjc dependencies
+
+```bash
+~/.local/share/uv/tools/amplifier/bin/python -m pip install \
+  "pyobjc-framework-Quartz>=10.0" \
+  "pyobjc-framework-ApplicationServices>=10.0"
+```
+
+### Grant Accessibility permission
+
+Semantic tree access and all input actions (click, type, key press, scroll) require macOS Accessibility permission. Grant it in:
+
+**System Settings → Privacy & Security → Accessibility**
+
+Add the application or terminal that runs Amplifier.
+
+### CI / testing without a real desktop
+
+Use `backend: fixture` to get deterministic fake data without any OS dependencies:
+
+```yaml
+# .amplifier/settings.local.yaml
+modules:
+  tools:
+    - module: tool-cua
+      config:
+        backend: fixture
+```
+
+`FixtureBackend` is always reachable through an explicit `backend: fixture` setting. The `auto` backend will **never** silently return fixture data — if the real backend cannot initialise on a recognised platform, it raises an actionable error pointing here.
